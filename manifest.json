@@ -10,5 +10,11 @@
   },
   "action": {
     "default_title": "Toggle Reload Alert"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [ "sound.mp3" ],
+      "matches": [ "*://*/*" ]
+    }
+  ]
 }
