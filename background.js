@@ -49,21 +49,16 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   }
 });
 
-function playSound(tabId) {
-  const url = chrome.runtime.getURL('sound.mp3');
-  chrome.scripting.executeScript({
-    target: { tabId },
-    args: [url],
-    func: (soundUrl) => {
-      const audio = new Audio(soundUrl);
-      audio.play().catch(() => {});
-    }
-  });
-}
-
 chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId !== 0) return;
   if (!enabledTabs.has(details.tabId)) return;
   updateAction(details.tabId, true);
-  playSound(details.tabId);
+  chrome.scripting.executeScript({
+    target: { tabId: details.tabId },
+    args: [ chrome.runtime.getURL('sound.mp3') ],
+    func: (url) => {
+      console.log(url);
+      new Audio(url).play();
+    }
+  });
 });
