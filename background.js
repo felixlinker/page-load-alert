@@ -34,11 +34,15 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId === 0 && enabledTabs.has(details.tabId)) {
     updateAction(details.tabId, true);
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: chrome.runtime.getURL('progress-check.png'),
-      title: 'Tab Reloaded',
-      message: 'The page has finished loading.'
+    chrome.tabs.get(details.tabId, (tab) => {
+      const iconUrl = tab.favIconUrl || chrome.runtime.getURL('progress-check.png');
+      const title = tab.title || 'The page';
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl,
+        title: 'Tab Reloaded',
+        message: `"${title}" has finished loading.`
+      });
     });
   }
 });
