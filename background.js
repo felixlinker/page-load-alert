@@ -1,20 +1,21 @@
 let enabledTabs = new Set();
 
-// Load saved state
-chrome.storage.local.get('enabledTabs', (data) => {
-  if (Array.isArray(data.enabledTabs)) {
-    enabledTabs = new Set(data.enabledTabs);
-    for (const tabId of enabledTabs) {
-      chrome.tabs.get(tabId, (tab) => {
-        if (chrome.runtime.lastError || !tab) {
-          enabledTabs.delete(tabId);
-          saveState();
-        } else {
-          updateAction(tabId, true);
-        }
-      });
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.get('enabledTabs', (data) => {
+    if (Array.isArray(data.enabledTabs)) {
+      enabledTabs = new Set(data.enabledTabs);
+      for (const tabId of enabledTabs) {
+        chrome.tabs.get(tabId, (tab) => {
+          if (chrome.runtime.lastError || !tab) {
+            enabledTabs.delete(tabId);
+            saveState();
+          } else {
+            updateAction(tabId, true);
+          }
+        });
+      }
     }
-  }
+  });
 });
 
 function saveState() {
@@ -24,9 +25,6 @@ function saveState() {
 function updateAction(tabId, enabled) {
   // Without custom icons, only update badge text
   chrome.action.setBadgeText({ tabId, text: enabled ? 'ON' : '' });
-  if (enabled) {
-    chrome.action.setBadgeBackgroundColor({ tabId, color: '#FF0000' });
-  }
 }
 
 function toggleTab(tabId) {
@@ -65,7 +63,5 @@ chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId !== 0) return;
   if (!enabledTabs.has(details.tabId)) return;
   updateAction(details.tabId, true);
-  if (details.transitionType === 'reload') {
-    showAlert(details.tabId);
-  }
+  showAlert(details.tabId);
 });
