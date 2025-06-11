@@ -36,12 +36,12 @@ chrome.webNavigation.onCompleted.addListener((details) => {
     updateAction(details.tabId, true);
     chrome.tabs.get(details.tabId, (tab) => {
       const iconUrl = tab.favIconUrl || chrome.runtime.getURL('progress-check.png');
-      const title = tab.title || 'The page';
+      const title = `"${tab.title}"` || 'The tab';
       chrome.notifications.create({
         type: 'basic',
         iconUrl,
         title: 'Tab Reloaded',
-        message: `"${title}" has finished loading.`
+        message: `${title} has finished loading.`
       });
     });
   }
