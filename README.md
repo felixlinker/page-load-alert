@@ -9,6 +9,6 @@ This extension displays a simple alert whenever a tab reloads and the extension 
 
 ## Usage
 - Click the extension's toolbar icon to toggle alerts for the active tab.
-- When enabled, the badge displays **ON**.
+- When enabled, the badge displays **ON** and stays visible even after the page reloads.
 - A stub alert message will appear each time the page reloads on that tab.
 - The setting is disabled by default and remembered per tab until the tab is closed.

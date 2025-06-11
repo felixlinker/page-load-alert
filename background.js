@@ -4,6 +4,16 @@ let enabledTabs = new Set();
 chrome.storage.local.get('enabledTabs', (data) => {
   if (Array.isArray(data.enabledTabs)) {
     enabledTabs = new Set(data.enabledTabs);
+    for (const tabId of enabledTabs) {
+      chrome.tabs.get(tabId, (tab) => {
+        if (chrome.runtime.lastError || !tab) {
+          enabledTabs.delete(tabId);
+          saveState();
+        } else {
+          updateAction(tabId, true);
+        }
+      });
+    }
   }
 });
 
@@ -53,7 +63,9 @@ function showAlert(tabId) {
 
 chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId !== 0) return;
-  if (details.transitionType === 'reload' && enabledTabs.has(details.tabId)) {
+  if (!enabledTabs.has(details.tabId)) return;
+  updateAction(details.tabId, true);
+  if (details.transitionType === 'reload') {
     showAlert(details.tabId);
   }
 });

@@ -4,6 +4,7 @@
   "description": "Plays a notification when an enabled tab reloads.",
   "version": "1.0",
   "permissions": ["tabs", "storage", "scripting", "webNavigation"],
+  "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js"
   },
