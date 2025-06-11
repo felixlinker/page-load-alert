@@ -1,5 +1,20 @@
 let enabledTabs = new Set();
 
+async function ensureOffscreen() {
+  if (await chrome.offscreen.hasDocument()) return;
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
+    justification: 'Play reload sound'
+  });
+}
+
+function playSound() {
+  ensureOffscreen().then(() => {
+    chrome.runtime.sendMessage({ playSound: true });
+  });
+}
+
 chrome.runtime.onStartup.addListener(() => {
   chrome.storage.local.get('enabledTabs', (data) => {
     if (Array.isArray(data.enabledTabs)) {
@@ -53,12 +68,5 @@ chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId !== 0) return;
   if (!enabledTabs.has(details.tabId)) return;
   updateAction(details.tabId, true);
-  chrome.scripting.executeScript({
-    target: { tabId: details.tabId },
-    args: [ chrome.runtime.getURL('sound.mp3') ],
-    func: (url) => {
-      console.log(url);
-      new Audio(url).play();
-    }
-  });
+  playSound();
 });
