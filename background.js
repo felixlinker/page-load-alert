@@ -34,13 +34,11 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.webNavigation.onCompleted.addListener((details) => {
   if (details.frameId === 0 && enabledTabs.has(details.tabId)) {
     updateAction(details.tabId, true);
-    chrome.scripting.executeScript({
-      target: { tabId: details.tabId },
-      args: [ chrome.runtime.getURL('sound.mp3') ],
-      func: (url) => {
-        console.log(url);
-        new Audio(url).play();
-      }
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('progress-check.png'),
+      title: 'Tab Reloaded',
+      message: 'The page has finished loading.'
     });
   }
 });

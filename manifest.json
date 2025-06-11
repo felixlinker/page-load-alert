@@ -1,20 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Page Reload Alert",
-  "description": "Plays a sound when an enabled tab reloads.",
+  "description": "Shows a notification when an enabled tab reloads.",
   "version": "1.0",
-  "permissions": ["tabs", "storage", "scripting", "webNavigation"],
+  "permissions": ["tabs", "storage", "scripting", "webNavigation", "notifications"],
   "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_title": "Toggle Reload Alert"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [ "sound.mp3" ],
-      "matches": [ "*://*/*" ]
-    }
-  ]
+  }
 }
