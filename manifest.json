@@ -3,7 +3,7 @@
   "name": "Page Reload Alert",
   "description": "Shows a notification when an enabled tab reloads.",
   "version": "1.0",
-  "permissions": ["tabs", "storage", "scripting", "notifications"],
+  "permissions": ["tabs", "storage", "notifications"],
   "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js"
