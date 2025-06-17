@@ -1,48 +1,57 @@
-let enabledTabs = new Set();
-
-function saveState() {
-  chrome.storage.local.set({ enabledTabs: Array.from(enabledTabs) });
+function getEnabled() {
+  return chrome.storage.session.get({ enabledTabs: [] })
+    .then(({ enabledTabs }) => new Set(enabledTabs));
 }
 
-function updateAction(tabId, enabled) {
-  chrome.action.setBadgeText({ tabId, text: enabled ? 'ON' : '' });
+function setEnabled(enabled) {
+  return chrome.storage.session.set({ enabledTabs: Array.from(enabled) });
 }
 
-function toggleTab(tabId) {
-  const enabled = enabledTabs.has(tabId);
-  if (enabled) {
-    enabledTabs.delete(tabId);
+// enable:
+//  undefined => toggle
+//  true      => enable
+//  false     => disable
+function toggle(enabled, tabId, enable) {
+  const add = (enable === undefined || enable) && !enabled.has(tabId);
+  const remove = (enable === undefined || enable === false) && enabled.has(tabId);
+
+  if (add) {
+    return setEnabled(enabled.add(tabId)).then(() => true);
+  } else if (remove) {
+    return setEnabled(enabled.delete(tabId)).then(() => false);
   } else {
-    enabledTabs.add(tabId);
+    return Promise.resolve(enabled.has(tabId));
   }
-  updateAction(tabId, !enabled);
-  saveState();
+}
+
+function setBadgeText(tabId, enabled) {
+  return chrome.action.setBadgeText({ tabId, text: enabled ? 'ON' : '' });
 }
 
 chrome.action.onClicked.addListener((tab) => {
   if (tab && tab.id !== undefined) {
-    toggleTab(tab.id);
+    getEnabled()
+      .then((enabled) => toggle(enabled, tab.id))
+      .then((isEnabled) => setBadgeText(tab.id, isEnabled));
   }
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
-  if (enabledTabs.delete(tabId)) {
-    saveState();
-  }
+  getEnabled().then((enabled) => toggle(enabled, tabId, false));
 });
 
-chrome.webNavigation.onCompleted.addListener((details) => {
-  if (details.frameId === 0 && enabledTabs.has(details.tabId)) {
-    updateAction(details.tabId, true);
-    chrome.tabs.get(details.tabId, (tab) => {
-      const iconUrl = tab.favIconUrl || chrome.runtime.getURL('progress-check.png');
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  getEnabled().then((enabled) => {
+    const isEnabled = enabled.has(tabId);
+    setBadgeText(tabId, isEnabled);
+    if (isEnabled && changeInfo.status === 'complete') {
       const title = `"${tab.title}"` || 'The tab';
       chrome.notifications.create({
         type: 'basic',
-        iconUrl,
+        iconUrl: chrome.runtime.getURL('progress-check.png'),
         title: 'Tab Reloaded',
         message: `${title} has finished loading.`
       });
-    });
-  }
+    }
+  });
 });
